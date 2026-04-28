@@ -27,6 +27,7 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_process::init())
         .manage(repo)
         .setup(|app| {
             // macOS: hide Dock icon by setting Accessory activation policy.
@@ -48,6 +49,16 @@ pub fn run() {
                     match commands::network::do_apply_profile(&profile) {
                         Ok(msg) => log::info!("Startup auto-apply: {msg}"),
                         Err(e) => log::warn!("Startup auto-apply failed: {e}"),
+                    }
+
+                    // Bring app back to foreground after potential elevation dialog
+                    #[cfg(target_os = "macos")]
+                    {
+                        crate::macos_activate::activate_app();
+                        if let Some(window) = app.get_webview_window("main") {
+                            let _ = window.show();
+                            let _ = window.set_focus();
+                        }
                     }
                 }
             }
