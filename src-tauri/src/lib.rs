@@ -8,7 +8,7 @@ mod storage;
 mod tray;
 
 use storage::sqlite::ProfileRepository;
-use tauri::{ActivationPolicy, Manager};
+use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -21,10 +21,14 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .manage(repo)
         .setup(|app| {
-            // Set accessory activation policy BEFORE building the tray to avoid
-            // a brief Dock icon flicker. Tauri defaults to Regular which overrides
-            // LSUIElement in Info.plist, so we must set this explicitly.
-            let _ = app.handle().set_activation_policy(ActivationPolicy::Accessory);
+            // macOS: hide Dock icon by setting Accessory activation policy.
+            // Tauri defaults to Regular which overrides LSUIElement in Info.plist.
+            #[cfg(target_os = "macos")]
+            {
+                use tauri::ActivationPolicy;
+                let _ = app.handle().set_activation_policy(ActivationPolicy::Accessory);
+            }
+
             if let Err(e) = tray::build_tray(app.handle()) {
                 log::error!("Failed to build tray icon: {e}");
             }
