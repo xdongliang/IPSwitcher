@@ -15,6 +15,12 @@
 - [package.json](file://package.json)
 </cite>
 
+## 更新摘要
+**变更内容**
+- 更新useNetwork Hook的自动网络配置获取逻辑，改进了接口回退机制
+- 新增网络接口回退策略的详细分析
+- 更新故障排除指南中的网络检测问题解决方案
+
 ## 目录
 1. [简介](#简介)
 2. [项目结构](#项目结构)
@@ -69,7 +75,7 @@ H --> J
 
 **图表来源**
 - [App.tsx:1-195](file://src/App.tsx#L1-L195)
-- [useProfiles.ts:1-117](file://src/hooks/useProfiles.ts#L1-L117)
+- [useProfiles.ts:1-131](file://src/hooks/useProfiles.ts#L1-L131)
 - [useNetwork.ts:1-99](file://src/hooks/useNetwork.ts#L1-L99)
 
 **章节来源**
@@ -148,8 +154,8 @@ Note over Hook,Tauri : 异步通信
 ```
 
 **图表来源**
-- [useProfiles.ts:10-53](file://src/hooks/useProfiles.ts#L10-L53)
-- [useNetwork.ts:13-69](file://src/hooks/useNetwork.ts#L13-L69)
+- [useProfiles.ts:20-31](file://src/hooks/useProfiles.ts#L20-L31)
+- [useNetwork.ts:28-38](file://src/hooks/useNetwork.ts#L28-L38)
 - [lib.rs:36-46](file://src-tauri/src/lib.rs#L36-L46)
 
 ## 详细组件分析
@@ -160,8 +166,9 @@ Note over Hook,Tauri : 异步通信
 
 #### 状态管理策略
 
-Hook内部维护了三个核心状态：
+Hook内部维护了四个核心状态：
 - `profiles`: 存储所有配置方案的数组
+- `activeProfileId`: 存储当前激活的配置ID
 - `loading`: 表示数据加载状态
 - `error`: 存储最近的错误信息
 
@@ -190,16 +197,17 @@ R --> T[重新抛出错误]
 ```
 
 **图表来源**
-- [useProfiles.ts:5-117](file://src/hooks/useProfiles.ts#L5-L117)
+- [useProfiles.ts:5-131](file://src/hooks/useProfiles.ts#L5-L131)
 
 #### 关键实现特性
 
 1. **状态同步**: 创建和更新操作会立即更新本地状态，避免了不必要的重新加载
 2. **错误隔离**: 每个操作都有独立的错误处理，不会相互影响
 3. **类型安全**: 使用TypeScript泛型确保与后端命令的参数匹配
+4. **活动配置跟踪**: 专门维护当前激活的配置ID，便于UI状态显示
 
 **章节来源**
-- [useProfiles.ts:1-117](file://src/hooks/useProfiles.ts#L1-L117)
+- [useProfiles.ts:1-131](file://src/hooks/useProfiles.ts#L1-L131)
 
 ### useNetwork Hook 设计分析
 
@@ -207,7 +215,7 @@ R --> T[重新抛出错误]
 
 #### 自动刷新机制
 
-Hook实现了智能的自动刷新策略：
+Hook实现了智能的自动刷新策略，**已更新**：
 
 ```mermaid
 flowchart TD
@@ -217,13 +225,35 @@ C --> D[查找活动接口]
 D --> E{找到活动接口?}
 E --> |是| F[获取当前配置]
 F --> G[设置定时器每30秒刷新]
-E --> |否| H[等待接口变化]
-G --> I[清理定时器]
-I --> J[组件卸载时清理]
+E --> |否| H[回退到第一个可用接口]
+H --> I[获取当前配置]
+I --> J[设置定时器每30秒刷新]
+G --> K[清理定时器]
+K --> L[组件卸载时清理]
 ```
 
+**更新** 改进了接口回退逻辑，当没有检测到活动接口时，会自动回退到第一个可用接口，防止应用在网络检测失败时卡死。
+
 **图表来源**
-- [useNetwork.ts:71-86](file://src/hooks/useNetwork.ts#L71-L86)
+- [useNetwork.ts:76-86](file://src/hooks/useNetwork.ts#L76-L86)
+
+#### 网络接口回退策略
+
+**新增** Hook现在实现了智能的网络接口选择策略：
+
+```mermaid
+flowchart TD
+A[获取接口列表] --> B[查找活动接口]
+B --> C{找到活动接口?}
+C --> |是| D[使用活动接口]
+C --> |否| E[使用第一个可用接口]
+D --> F[获取当前配置]
+E --> F
+F --> G[设置定时器]
+G --> H[30秒后再次获取]
+```
+
+这种设计确保了即使在某些平台上无法正确识别活动接口的情况下，应用仍然能够正常工作。
 
 #### 管理员权限处理
 
@@ -279,8 +309,8 @@ F --> J[当前网络状态显示]
 **图表来源**
 - [App.tsx:10-27](file://src/App.tsx#L10-L27)
 - [ProfileList.tsx:1-52](file://src/components/ProfileList.tsx#L1-L52)
-- [ProfileForm.tsx:1-357](file://src/components/ProfileForm.tsx#L1-L357)
-- [StatusBar.tsx:1-39](file://src/components/StatusBar.tsx#L1-L39)
+- [ProfileForm.tsx:1-200](file://src/components/ProfileForm.tsx#L1-L200)
+- [StatusBar.tsx:1-53](file://src/components/StatusBar.tsx#L1-L53)
 
 **章节来源**
 - [App.tsx:1-195](file://src/App.tsx#L1-L195)
@@ -337,11 +367,11 @@ F --> J[SwitchConfirmDialog组件]
 ```
 
 **图表来源**
-- [useProfiles.ts:1-117](file://src/hooks/useProfiles.ts#L1-L117)
+- [useProfiles.ts:1-131](file://src/hooks/useProfiles.ts#L1-L131)
 - [useNetwork.ts:1-99](file://src/hooks/useNetwork.ts#L1-L99)
 - [ProfileList.tsx:1-52](file://src/components/ProfileList.tsx#L1-L52)
-- [ProfileForm.tsx:1-357](file://src/components/ProfileForm.tsx#L1-L357)
-- [StatusBar.tsx:1-39](file://src/components/StatusBar.tsx#L1-L39)
+- [ProfileForm.tsx:1-200](file://src/components/ProfileForm.tsx#L1-L200)
+- [StatusBar.tsx:1-53](file://src/components/StatusBar.tsx#L1-L53)
 
 **章节来源**
 - [package.json:1-27](file://package.json#L1-L27)
@@ -352,7 +382,7 @@ F --> J[SwitchConfirmDialog组件]
 
 1. **useCallback优化**: 所有异步函数都使用`useCallback`进行记忆化，避免不必要的重渲染
 2. **状态局部化**: 每个Hook只管理自己相关的状态，减少全局状态污染
-3. **条件加载**: 网络配置的自动刷新仅在有活动接口时启用
+3. **条件加载**: 网络配置的自动刷新仅在有活动接口时启用，**已更新**改进了接口检测逻辑
 4. **错误边界**: 错误状态独立管理，不影响其他Hook的功能
 
 ### 数据缓存机制
@@ -382,12 +412,16 @@ F --> J[SwitchConfirmDialog组件]
 
 #### 接口发现失败
 
-**症状**: 无法获取网络接口列表
+**症状**: 无法获取网络接口列表或应用卡死
+
+**更新** **新增** 改进的接口回退机制可以解决此问题：
 
 **解决方案**:
 1. 检查系统网络服务状态
 2. 确认平台支持性
 3. 查看控制台错误日志
+4. **新增**: 如果活动接口检测失败，Hook会自动回退到第一个可用接口
+5. **新增**: 网络配置获取逻辑现在更加健壮，不会因为单个接口问题而完全失败
 
 #### 配置验证失败
 
@@ -397,6 +431,18 @@ F --> J[SwitchConfirmDialog组件]
 1. 检查输入数据格式
 2. 验证IP地址、子网掩码等格式
 3. 确认必填字段完整性
+
+#### 网络状态监控异常
+
+**更新** **新增** 改进的监控机制：
+
+**症状**: 网络状态不更新或显示异常
+
+**解决方案**:
+1. 检查定时器是否正常运行
+2. 验证接口回退逻辑是否正确执行
+3. 确认30秒刷新间隔设置
+4. 查看控制台是否有网络配置获取错误
 
 **章节来源**
 - [useNetwork.ts:20-26](file://src/hooks/useNetwork.ts#L20-L26)
@@ -408,6 +454,7 @@ F --> J[SwitchConfirmDialog组件]
 2. **状态检查**: 使用React DevTools检查Hook状态变化
 3. **网络监控**: 监控Tauri命令执行时间和成功率
 4. **错误追踪**: 利用Promise链路追踪错误发生位置
+5. **接口状态监控**: 观察接口回退逻辑的执行情况
 
 ## 结论
 
@@ -418,6 +465,8 @@ IPSwitcher的自定义Hook设计体现了现代React应用的最佳实践：
 3. **异步处理**: 正确处理异步操作和错误边界
 4. **性能优化**: 通过记忆化和条件渲染优化性能
 5. **用户体验**: 提供流畅的交互和及时的反馈
+
+**更新** 最新的接口回退机制进一步增强了应用的健壮性和可靠性，确保在网络环境复杂或接口检测不稳定的情况下仍能正常工作。
 
 这两个Hook为IPSwitcher提供了坚实的基础，使得复杂网络配置管理变得简单直观。
 
@@ -457,3 +506,4 @@ IPSwitcher的自定义Hook设计体现了现代React应用的最佳实践：
 3. **并发控制**: 添加请求去重和并发限制
 4. **测试覆盖**: 为Hook添加单元测试和集成测试
 5. **性能监控**: 添加Hook性能指标和监控
+6. **接口回退**: 可以进一步增强接口回退策略，支持更多容错机制

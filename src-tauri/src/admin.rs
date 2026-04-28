@@ -8,11 +8,14 @@ pub fn is_elevated() -> bool {
     }
     #[cfg(target_os = "windows")]
     {
+        use std::os::windows::process::CommandExt;
+        const CREATE_NO_WINDOW: u32 = 0x08000000;
         // "net session" requires admin privileges on Windows
         std::process::Command::new("net")
             .arg("session")
             .stdout(std::process::Stdio::null())
             .stderr(std::process::Stdio::null())
+            .creation_flags(CREATE_NO_WINDOW)
             .status()
             .map(|s| s.success())
             .unwrap_or(false)
@@ -140,7 +143,10 @@ fn build_windows_command(
 
 #[cfg(target_os = "windows")]
 fn run_windows_elevated(command: &str) -> Result<String, AppError> {
+    use std::os::windows::process::CommandExt;
     use std::process::Command;
+
+    const CREATE_NO_WINDOW: u32 = 0x08000000;
 
     let output = Command::new("powershell")
         .args([
@@ -150,6 +156,7 @@ fn run_windows_elevated(command: &str) -> Result<String, AppError> {
                 command
             ),
         ])
+        .creation_flags(CREATE_NO_WINDOW)
         .output()
         .map_err(|e| AppError::Network(format!("无法执行提权命令: {}", e)))?;
 

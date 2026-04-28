@@ -1,13 +1,23 @@
+use std::os::windows::process::CommandExt;
 use std::process::Command;
 
 use crate::error::AppError;
 use crate::platform::{CurrentNetworkConfig, NetworkInterface, NetworkManager};
 
+const CREATE_NO_WINDOW: u32 = 0x08000000;
+
+/// 创建隐藏控制台窗口的 netsh 命令
+fn netsh_command() -> Command {
+    let mut cmd = Command::new("netsh");
+    cmd.creation_flags(CREATE_NO_WINDOW);
+    cmd
+}
+
 pub struct WindowsNetworkManager;
 
 impl NetworkManager for WindowsNetworkManager {
     fn list_interfaces(&self) -> Result<Vec<NetworkInterface>, AppError> {
-        let output = Command::new("netsh")
+        let output = netsh_command()
             .args(["interface", "ip", "show", "interfaces"])
             .output()?;
 
@@ -38,7 +48,7 @@ impl NetworkManager for WindowsNetworkManager {
     }
 
     fn get_current_config(&self, interface: &str) -> Result<CurrentNetworkConfig, AppError> {
-        let output = Command::new("netsh")
+        let output = netsh_command()
             .args(["interface", "ip", "show", "config", &format!("name=\"{}\"", interface)])
             .output()?;
 
@@ -94,7 +104,7 @@ impl NetworkManager for WindowsNetworkManager {
         dns: &[String],
     ) -> Result<(), AppError> {
         // Step 1: Set static IP address
-        let status = Command::new("netsh")
+        let status = netsh_command()
             .args([
                 "interface", "ip", "set", "address",
                 &format!("name=\"{}\"", interface),
@@ -111,7 +121,7 @@ impl NetworkManager for WindowsNetworkManager {
         // Step 2: Set DNS servers
         if let Some((first, rest)) = dns.split_first() {
             // Primary DNS
-            let status = Command::new("netsh")
+            let status = netsh_command()
                 .args([
                     "interface", "ip", "set", "dns",
                     &format!("name=\"{}\"", interface),
@@ -125,7 +135,7 @@ impl NetworkManager for WindowsNetworkManager {
 
             // Additional DNS servers
             for (i, d) in rest.iter().enumerate() {
-                let status = Command::new("netsh")
+                let status = netsh_command()
                     .args([
                         "interface", "ip", "add", "dns",
                         &format!("name=\"{}\"", interface),
@@ -146,7 +156,7 @@ impl NetworkManager for WindowsNetworkManager {
 
     fn set_dhcp(&self, interface: &str) -> Result<(), AppError> {
         // Set address to DHCP
-        let status = Command::new("netsh")
+        let status = netsh_command()
             .args([
                 "interface", "ip", "set", "address",
                 &format!("name=\"{}\"", interface),
@@ -159,7 +169,7 @@ impl NetworkManager for WindowsNetworkManager {
         }
 
         // Set DNS to DHCP
-        let _ = Command::new("netsh")
+        let _ = netsh_command()
             .args([
                 "interface", "ip", "set", "dns",
                 &format!("name=\"{}\"", interface),
