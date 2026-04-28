@@ -43,7 +43,7 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDQ1MDJGRkFCQTIzQjE2NUEKUldSYUZqdWlxLzhDUlgwdDQwQTUreWJWL0NkYldzRFRxYUNSVHI3d1h4WE1HbjRUMldFNnZuOHUK%",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDQ1MDJGRkFCQTIzQjE2NUEKUldSYUZqdWlxLzhDUlgwdDQwQTUreWJWL0NkYldzRFRxYUNSVHI3d1h4WE1HbjRUMldFNnZuOHUK",
       "endpoints": [
         "https://github.com/xdongliang/IPSwitcher/releases/latest/download/latest.json"
       ],
