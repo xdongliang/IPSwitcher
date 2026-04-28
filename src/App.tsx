@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { getVersion } from "@tauri-apps/api/app";
 import { getCurrentWindow } from "@tauri-apps/api/window";
@@ -34,12 +34,23 @@ export default function App() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [appVersion, setAppVersion] = useState<string>("");
+  const checkUpdateRef = useRef<(() => void) | null>(null);
+  const [updateChecking, setUpdateChecking] = useState(false);
 
   useEffect(() => {
     getVersion().then((v) => {
       setAppVersion(v);
       getCurrentWindow().setTitle(`IPSwitcher v${v}`);
     });
+  }, []);
+
+  const handleCheckUpdate = useCallback(() => {
+    if (checkUpdateRef.current) {
+      setUpdateChecking(true);
+      checkUpdateRef.current();
+      // Reset checking state after a timeout (the UpdateChecker will handle the actual state)
+      setTimeout(() => setUpdateChecking(false), 3000);
+    }
   }, []);
 
   const handleSelectProfile = useCallback((id: string) => {
@@ -169,7 +180,7 @@ export default function App() {
 
   return (
     <div className="app-container">
-      <UpdateChecker />
+      <UpdateChecker onCheckRef={checkUpdateRef} />
       <div className="app-main">
         <aside className="sidebar">
           <ProfileList
@@ -215,6 +226,8 @@ export default function App() {
         loading={networkLoading}
         activeProfileName={activeProfile?.name || null}
         version={appVersion}
+        onCheckUpdate={handleCheckUpdate}
+        checking={updateChecking}
       />
     </div>
   );

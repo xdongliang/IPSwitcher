@@ -577,6 +577,26 @@ body {
   font-size: 11px;
 }
 
+.status-check-update {
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  font-size: 11px;
+  cursor: pointer;
+  padding: 0;
+  outline: none;
+  transition: text-decoration 0.15s;
+}
+
+.status-check-update:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+.status-check-update:disabled {
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
 /* Loading / Empty States */
 .loading-state {
   padding: 24px;
@@ -696,6 +716,45 @@ body {
   gap: 8px;
   padding: 16px 24px;
   border-top: 1px solid var(--color-border);
+}
+
+/* Update Toast */
+.update-toast {
+  position: fixed;
+  bottom: 48px;
+  right: 16px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  padding: 10px 18px;
+  font-size: 13px;
+  color: var(--color-text);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  animation: toast-in 0.2s ease;
+}
+
+.update-toast-icon {
+  color: var(--color-success);
+  font-weight: 700;
+}
+
+.update-toast-checking {
+  color: var(--color-text-secondary);
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Scrollbar */

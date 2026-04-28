@@ -1,14 +1,51 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { check, type Update } from "@tauri-apps/plugin-updater";
 
-type UpdateStage = "idle" | "available" | "downloading" | "done" | "restarting";
+type UpdateStage = "idle" | "checking" | "available" | "downloading" | "done" | "restarting";
 
-export default function UpdateChecker() {
+interface UpdateCheckerProps {
+  onCheckRef?: React.MutableRefObject<(() => void) | null>;
+}
+
+export default function UpdateChecker({ onCheckRef }: UpdateCheckerProps) {
   const [stage, setStage] = useState<UpdateStage>("idle");
   const [update, setUpdate] = useState<Update | null>(null);
   const [progress, setProgress] = useState(0);
+  const [showUpToDate, setShowUpToDate] = useState(false);
   const checkedRef = useRef(false);
 
+  // Manual check function
+  const doManualCheck = useCallback(async () => {
+    setStage("checking");
+    try {
+      const result = await check();
+      if (result?.available) {
+        setUpdate(result);
+        setStage("available");
+      } else {
+        setStage("idle");
+        setShowUpToDate(true);
+        setTimeout(() => setShowUpToDate(false), 2000);
+      }
+    } catch (e) {
+      console.error("Update check failed:", e);
+      setStage("idle");
+    }
+  }, []);
+
+  // Expose manual check to parent via ref
+  useEffect(() => {
+    if (onCheckRef) {
+      onCheckRef.current = doManualCheck;
+    }
+    return () => {
+      if (onCheckRef) {
+        onCheckRef.current = null;
+      }
+    };
+  }, [onCheckRef, doManualCheck]);
+
+  // Auto check on mount (with 3s delay)
   useEffect(() => {
     if (checkedRef.current) return;
     checkedRef.current = true;
@@ -78,7 +115,22 @@ export default function UpdateChecker() {
     setUpdate(null);
   }, []);
 
-  if (stage === "idle") return null;
+  if (stage === "idle" && !showUpToDate) return null;
+  if (stage === "idle" && showUpToDate) {
+    return (
+      <div className="update-toast">
+        <span className="update-toast-icon">✓</span>
+        已是最新版本
+      </div>
+    );
+  }
+  if (stage === "checking") {
+    return (
+      <div className="update-toast update-toast-checking">
+        正在检查更新…
+      </div>
+    );
+  }
 
   return (
     <div className="update-overlay">
