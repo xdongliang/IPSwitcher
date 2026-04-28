@@ -83,6 +83,23 @@ npm run tauri build
 | macOS | `.app` / `.dmg` |
 | Windows | `.exe` / `.msi` |
 
+### 版本号配置
+
+发布新版本时，需要同步修改以下 3 个文件中的版本号：
+
+```bash
+# 1. 主版本号来源（前端 getVersion() 读取此值）
+src-tauri/tauri.conf.json  →  "version": "1.0.0"
+
+# 2. Rust 包版本
+src-tauri/Cargo.toml       →  version = "1.0.0"
+
+# 3. npm 包版本
+package.json               →  "version": "1.0.0"
+```
+
+版本号会展示在窗口标题栏、欢迎页和底部状态栏。
+
 ### 其他命令
 
 ```bash

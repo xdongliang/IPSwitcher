@@ -22,7 +22,7 @@ export default function SwitchConfirmDialog({
   return (
     <div className="dialog-overlay" onClick={onCancel}>
       <div className="dialog" onClick={(e) => e.stopPropagation()}>
-        <h3 className="dialog-title">确认切换网络配置</h3>
+        <h3 className="dialog-title">确认应用网络配置</h3>
 
         <div className="dialog-body">
           <div className="confirm-row">
@@ -79,7 +79,7 @@ export default function SwitchConfirmDialog({
             取消
           </button>
           <button className="btn btn-primary" onClick={onConfirm}>
-            确认切换
+            确认应用
           </button>
         </div>
       </div>

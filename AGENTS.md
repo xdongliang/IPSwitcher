@@ -187,6 +187,20 @@ CREATE TABLE settings (
 );
 ```
 
+## 版本号管理
+
+版本号的唯一来源是 `src-tauri/tauri.conf.json` 中的 `version` 字段。前端通过 `@tauri-apps/api/app` 的 `getVersion()` 在运行时读取该值，用于窗口标题和界面展示。
+
+### 修改版本号
+
+发布新版本时，需要同步更新以下 3 个文件中的版本号：
+
+| 文件 | 字段 | 说明 |
+|------|------|------|
+| `src-tauri/tauri.conf.json` | `"version"` | **主版本号来源**，前端 `getVersion()` 读取此值 |
+| `src-tauri/Cargo.toml` | `version` | Rust 包版本，保持与上面同步 |
+| `package.json` | `"version"` | npm 包版本，保持与上面同步 |
+
 ## 应用行为
 
 ### 启动流程

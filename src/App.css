@@ -222,6 +222,12 @@ body {
   margin-top: 12px !important;
 }
 
+.welcome-version {
+  color: var(--color-text-muted);
+  font-size: 13px;
+  margin-top: 4px !important;
+}
+
 /* Profile Form */
 .profile-form {
   max-width: 560px;
@@ -422,6 +428,12 @@ body {
   border: none;
 }
 
+.profile-card .btn-switch:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: var(--color-primary);
+}
+
 .btn-sm {
   padding: 4px 12px;
   font-size: 12px;
@@ -551,6 +563,18 @@ body {
 .active-profile-label {
   color: var(--color-success);
   font-weight: 600;
+}
+
+.status-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.status-version {
+  color: var(--color-text-muted);
+  font-size: 11px;
 }
 
 /* Loading / Empty States */

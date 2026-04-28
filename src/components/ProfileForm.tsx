@@ -71,7 +71,7 @@ export default function ProfileForm({
       setInterfaceName("");
     }
     setError(null);
-  }, [profile]);
+  }, [profile?.id]);
 
   const validate = useCallback((): string | null => {
     if (!name.trim()) return "方案名称不能为空";

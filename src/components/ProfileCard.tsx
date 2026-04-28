@@ -48,8 +48,9 @@ export default function ProfileCard({
           e.stopPropagation();
           onSwitch();
         }}
+        disabled={isActive}
       >
-        切换
+        {isActive ? "已应用" : "应用"}
       </button>
     </div>
   );

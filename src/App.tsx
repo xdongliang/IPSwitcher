@@ -1,5 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { listen } from "@tauri-apps/api/event";
+import { getVersion } from "@tauri-apps/api/app";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import ProfileList from "./components/ProfileList";
 import ProfileForm, { ProfileFormData } from "./components/ProfileForm";
 import StatusBar from "./components/StatusBar";
@@ -30,6 +32,14 @@ export default function App() {
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [appVersion, setAppVersion] = useState<string>("");
+
+  useEffect(() => {
+    getVersion().then((v) => {
+      setAppVersion(v);
+      getCurrentWindow().setTitle(`IPSwitcher v${v}`);
+    });
+  }, []);
 
   const handleSelectProfile = useCallback((id: string) => {
     setSelectedId(id);
@@ -185,6 +195,7 @@ export default function App() {
             <div className="welcome-placeholder">
               <h2>IPSwitcher</h2>
               <p>网络配置切换工具</p>
+              {appVersion && <p className="welcome-version">v{appVersion}</p>}
               <p className="welcome-hint">
                 从左侧选择一个配置方案，或点击"+ 新建"创建新方案
               </p>
@@ -201,6 +212,7 @@ export default function App() {
         config={currentConfig}
         loading={networkLoading}
         activeProfileName={activeProfile?.name || null}
+        version={appVersion}
       />
     </div>
   );

@@ -75,7 +75,7 @@ export function useNetwork() {
 
   useEffect(() => {
     // Auto-fetch current config every 30 seconds
-    const activeIface = interfaces.find((i) => i.is_active);
+    const activeIface = interfaces.find((i) => i.is_active) || interfaces[0];
     if (activeIface) {
       fetchCurrentConfig(activeIface.name);
       const interval = setInterval(() => {

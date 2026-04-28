@@ -4,13 +4,17 @@ interface StatusBarProps {
   config: CurrentNetworkConfig | null;
   loading: boolean;
   activeProfileName: string | null;
+  version: string;
 }
 
-export default function StatusBar({ config, loading, activeProfileName }: StatusBarProps) {
+export default function StatusBar({ config, loading, activeProfileName, version }: StatusBarProps) {
+  const versionLabel = version ? <span className="status-version">v{version}</span> : null;
+
   if (loading) {
     return (
       <div className="status-bar">
         <span className="status-text">正在获取网络状态...</span>
+        {versionLabel}
       </div>
     );
   }
@@ -19,7 +23,10 @@ export default function StatusBar({ config, loading, activeProfileName }: Status
     return (
       <div className="status-bar">
         <span className="status-text status-unknown">无法获取网络状态</span>
-        <span className="status-dot dot-unknown" />
+        <span className="status-right">
+          {versionLabel}
+          <span className="status-dot dot-unknown" />
+        </span>
       </div>
     );
   }
@@ -36,7 +43,10 @@ export default function StatusBar({ config, loading, activeProfileName }: Status
         当前: {config.interface} → {ipText} ({modeText})
         {config.gateway && ` | 网关: ${config.gateway}`}
       </span>
-      <span className={`status-dot ${config.ip_address ? "dot-connected" : "dot-disconnected"}`} />
+      <span className="status-right">
+        {versionLabel}
+        <span className={`status-dot ${config.ip_address ? "dot-connected" : "dot-disconnected"}`} />
+      </span>
     </div>
   );
 }
