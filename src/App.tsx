@@ -5,6 +5,7 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import ProfileList from "./components/ProfileList";
 import ProfileForm, { ProfileFormData } from "./components/ProfileForm";
 import StatusBar from "./components/StatusBar";
+import UpdateChecker from "./components/UpdateChecker";
 import { useProfiles } from "./hooks/useProfiles";
 import { useNetwork } from "./hooks/useNetwork";
 import type { Profile } from "./types";
@@ -168,6 +169,7 @@ export default function App() {
 
   return (
     <div className="app-container">
+      <UpdateChecker />
       <div className="app-main">
         <aside className="sidebar">
           <ProfileList
