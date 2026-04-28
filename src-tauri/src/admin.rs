@@ -163,9 +163,11 @@ fn run_windows_elevated(command: &str) -> Result<String, AppError> {
     if output.status.success() {
         Ok(String::from_utf8_lossy(&output.stdout).to_string())
     } else {
-        Err(AppError::Network(format!(
-            "执行命令失败: {}",
-            String::from_utf8_lossy(&output.stderr)
-        )))
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        if stderr.contains("canceled") || stderr.contains("cancelled") || stderr.contains("is not recognized") {
+            Err(AppError::PermissionDenied("用户取消了权限授权或权限不足".into()))
+        } else {
+            Err(AppError::Network(format!("执行命令失败: {}", stderr)))
+        }
     }
 }
